@@ -10,13 +10,17 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
+	"github.com/go-playground/validator/v10"
+	_ "github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-chi/chi/v5"
 )
 
+var validate = validator.New()
+
 func writeError(w http.ResponseWriter, r *http.Request, status int, msg string) {
-	render.Status(r, http.StatusBadRequest)
+	render.Status(r, status)
 	render.JSON(w, r, map[string]string{
 		"status":  "error",
 		"message": msg,
@@ -84,6 +88,15 @@ func (h *Handler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
 		}).Error("failed to decode request body")
+
+		writeError(w, r, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if err := validate.Struct(task); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("invalid request body")
 
 		writeError(w, r, http.StatusBadRequest, "invalid request body")
 		return

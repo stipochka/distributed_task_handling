@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockery --name TaskService --output ../mocks --dir . --case=underscore
 type TaskService interface {
 	SendTask(ctx context.Context, task *models.Task) (uuid.UUID, error)
 }
