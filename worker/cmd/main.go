@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 	"worker/internal/consumer"
 	"worker/internal/pool"
 	"worker/internal/storage"
@@ -45,10 +46,12 @@ func main() {
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
 
-	broker.Run(ctx, "tasks")
-
+	go func() {
+		broker.Run(ctx, "tasks.*")
+	}()
 	<-done
 
 	logrus.Info("stopping worker...")
 	cancel()
+	time.Sleep(time.Second * 10)
 }

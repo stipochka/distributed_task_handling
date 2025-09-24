@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	chanCap = 30
+	chanCap = 10
 )
 
 type WorkerPool interface {

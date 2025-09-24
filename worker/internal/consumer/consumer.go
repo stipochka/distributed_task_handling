@@ -33,6 +33,8 @@ func NewConsumer(addr string, pool pool.WorkerPool) (*Consumer, error) {
 }
 
 func (c *Consumer) Run(ctx context.Context, streamName string) error {
+	c.pool.Start(ctx)
+
 	sub, err := c.js.Subscribe(streamName, func(msg *nats.Msg) {
 		task := models.Task{}
 
@@ -42,6 +44,9 @@ func (c *Consumer) Run(ctx context.Context, streamName string) error {
 			return
 		}
 
+		logrus.WithFields(logrus.Fields{
+			"task": task,
+		}).Info()
 		c.pool.SubmitTask(task)
 		_ = msg.Ack()
 	}, nats.Durable("worker1"), nats.ManualAck())
@@ -59,5 +64,6 @@ func (c *Consumer) Run(ctx context.Context, streamName string) error {
 	}
 
 	c.pool.Close()
+
 	return nil
 }
