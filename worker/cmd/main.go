@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
@@ -45,6 +47,13 @@ func main() {
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		logrus.Info("started pprof on :6060")
+		if err := http.ListenAndServe("127.0.0.1:6060", nil); err != nil {
+			logrus.WithError(err).Error("pprof server error")
+		}
+	}()
 
 	go func() {
 		broker.Run(ctx, "tasks.*")
