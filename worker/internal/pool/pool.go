@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 	"worker/internal/models"
+	"worker/internal/sender"
 	"worker/internal/storage"
 
 	"github.com/sirupsen/logrus"
@@ -26,14 +27,16 @@ type Pool struct {
 	taskCh       chan models.Task
 	repo         storage.Storage
 	wg           *sync.WaitGroup
+	sender       sender.Sender
 }
 
-func NewPool(workers int, repo storage.Storage) *Pool {
+func NewPool(workers int, repo storage.Storage, email, password, host, port string) *Pool {
 	return &Pool{
 		workersCount: workers,
 		taskCh:       make(chan models.Task, chanCap),
 		repo:         repo,
 		wg:           &sync.WaitGroup{},
+		sender:       sender.NewGmailSender(email, password, host, port),
 	}
 }
 
