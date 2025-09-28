@@ -2,6 +2,7 @@ package pool
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -77,8 +78,12 @@ func (p *Pool) work(ctx context.Context, id int) {
 
 			switch task.Type {
 			case "resize image":
-				err = p.ResizeImage(&task)
+				err = p.ResizeImage(task)
 				status = "processed"
+				description = fmt.Sprintf("task %s successfully completed", task.Type)
+			case "send email":
+				err = p.SendEmail(ctx, task)
+				status = "proceed"
 				description = fmt.Sprintf("task %s successfully completed", task.Type)
 			default:
 				logrus.Infof("received unknown task type, type: %s, worker_id=%d", task.Type, id)
@@ -112,9 +117,22 @@ func (p *Pool) Close() {
 	p.wg.Wait()
 }
 
-func (p *Pool) ResizeImage(task *models.Task) error {
+func (p *Pool) SendEmail(ctx context.Context, task models.Task) error {
+	var email models.Email
+
+	err := json.Unmarshal(task.Payload, &email)
+	if err != nil {
+		return err
+	}
+
+	err = p.sender.SendEmail(ctx, email)
+	logrus.Infof("successfully proceed task %s", task.TaskID)
+	return err
+}
+
+func (p *Pool) ResizeImage(task models.Task) error {
 	// logic of resize image
 	time.Sleep(time.Millisecond * 500) // imitating work
-	logrus.Infof("task %s resized successfully", task.TaskID)
+	logrus.Infof("successfully proceed task %s", task.TaskID)
 	return nil
 }

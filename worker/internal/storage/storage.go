@@ -28,9 +28,9 @@ func NewPostgresStorage(connString string) (*PostgresStorage, error) {
 
 	if _, err := conn.Exec(context.Background(), `CREATE TABLE 
 		IF NOT EXISTS task_result(
-			task_id VARCHAR(36), 
-			status VARCHAR(10), 
-			description VARCHAR(64),
+			task_id VARCHAR(64), 
+			status TEXT, 
+			description TEXT,
 			PRIMARY KEY (task_id)
 		);`); err != nil {
 		return nil, err
