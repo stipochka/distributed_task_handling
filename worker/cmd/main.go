@@ -31,12 +31,32 @@ func main() {
 		logrus.Fatal("failed to get broker addr")
 	}
 
+	senderEmail := os.Getenv("SENDER_EMAIL")
+	if senderEmail == "" {
+		logrus.Fatal("failed to get sender email")
+	}
+
+	senderPasswd := os.Getenv("SENDER_PASSWORD")
+	if senderPasswd == "" {
+		logrus.Fatal("failed to get sender password")
+	}
+
+	smtpHost := os.Getenv("SMTP_HOST")
+	if smtpHost == "" {
+		logrus.Fatal("failed to get smtp host")
+	}
+
+	smtpPort := os.Getenv("SMTP_PORT")
+	if smtpPort == "" {
+		logrus.Fatal("failed to get smtpPort")
+	}
+
 	repo, err := storage.NewPostgresStorage(dbUrl)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to init repo")
 	}
 
-	pool := pool.NewPool(5, repo)
+	pool := pool.NewPool(5, repo, senderEmail, senderPasswd, smtpHost, smtpPort)
 
 	broker, err := consumer.NewConsumer(brokerAddr, pool)
 	if err != nil {
