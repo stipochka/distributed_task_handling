@@ -29,10 +29,12 @@ func NewPostgresStorage(connString string) (*PostgresStorage, error) {
 	if _, err := conn.Exec(context.Background(), `CREATE TABLE 
 		IF NOT EXISTS task_result(
 			task_id VARCHAR(36), 
+			type VARCHAR(32),
 			status VARCHAR(10), 
 			description VARCHAR(64),
 			PRIMARY KEY (task_id)
-		);`); err != nil {
+		);
+		CREATE INDEX IF NOT EXISTS task_type ON task_result(type)`); err != nil {
 		return nil, err
 	}
 
@@ -44,8 +46,8 @@ func NewPostgresStorage(connString string) (*PostgresStorage, error) {
 func (p *PostgresStorage) SaveResult(ctx context.Context, result models.Result) error {
 	const op = "storage.TaskResult"
 
-	query := fmt.Sprintf("INSERT INTO %s (task_id, status, description) VALUES ($1, $2, $3);", resultTable)
-	_, err := p.db.Exec(ctx, query, result.TaskID, result.Status, result.Description)
+	query := fmt.Sprintf("INSERT INTO %s (task_id, type, status, description) VALUES ($1, $2, $3, $4);", resultTable)
+	_, err := p.db.Exec(ctx, query, result.TaskID, result.Type, result.Status, result.Description)
 	if err != nil {
 		return fmt.Errorf("%s:%w", op, err)
 	}

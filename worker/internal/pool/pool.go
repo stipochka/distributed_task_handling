@@ -91,6 +91,7 @@ func (p *Pool) work(ctx context.Context, id int) {
 
 			result := models.Result{
 				TaskID:      task.TaskID,
+				Type:        task.Type,
 				Status:      status,
 				Description: description,
 			}
